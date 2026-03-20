@@ -17,15 +17,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        /* Ajustes para comportamento nativo de aplicação */
-        body { 
-            overscroll-behavior-y: none; 
-            font-family: system-ui, -apple-system, sans-serif; 
-            margin: 0;
-            padding: 0;
-            background-color: #f8fafc;
-        }
-        /* Esconder barra de rolagem padrão para visual mais limpo */
+        body { overscroll-behavior-y: none; font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -35,271 +27,118 @@
     <div id="root"></div>
 
     <script>
-        // 1. Injetar Manifest dinamicamente
         const manifest = {
-            name: "TRBot IA",
-            short_name: "TRBot IA",
-            start_url: "./",
-            display: "standalone",
-            background_color: "#111b21",
-            theme_color: "#111b21",
-            icons: [
-                {
-                    src: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2300a884'/><text x='50' y='68' font-size='60' fill='white' font-weight='bold' text-anchor='middle' font-family='sans-serif'>T</text></svg>",
-                    sizes: "192x192",
-                    type: "image/svg+xml",
-                    purpose: "any maskable"
-                },
-                {
-                    src: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2300a884'/><text x='50' y='68' font-size='60' fill='white' font-weight='bold' text-anchor='middle' font-family='sans-serif'>T</text></svg>",
-                    sizes: "512x512",
-                    type: "image/svg+xml",
-                    purpose: "any maskable"
-                }
-            ]
+            name: "TRBot IA", short_name: "TRBot IA", start_url: "./", display: "standalone", background_color: "#111b21", theme_color: "#111b21",
+            icons: [{ src: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2300a884'/><text x='50' y='68' font-size='60' fill='white' font-weight='bold' text-anchor='middle' font-family='sans-serif'>T</text></svg>", sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" }]
         };
         const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
         document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
-
-        // 2. Registo do Service Worker corrigido
-        if ('serviceWorker' in navigator) {
-            console.log('✅ PWA: Manifest pronto para o ecrã principal.');
-        }
     </script>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Ícones em formato SVG nativo para não depender de pacotes externos
         const Icon = ({ d, size = 24, className = "", children }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {d ? <path d={d} /> : children}
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{d ? <path d={d} /> : children}</svg>
         );
         const MessageSquare = (p) => <Icon d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" {...p} />;
         const BookOpen = (p) => <Icon {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></Icon>;
         const Settings = (p) => <Icon {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></Icon>;
         const User = (p) => <Icon {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></Icon>;
         const Bot = (p) => <Icon {...p}><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></Icon>;
-        const Send = (p) => <Icon {...p}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></Icon>;
-        const Power = (p) => <Icon {...p}><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></Icon>;
-        const AlertCircle = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></Icon>;
         const Smartphone = (p) => <Icon {...p}><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></Icon>;
-        const Download = (p) => <Icon {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Icon>;
+        const Copy = (p) => <Icon {...p}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></Icon>;
+        const Check = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
         const Server = (p) => <Icon {...p}><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></Icon>;
 
         function App() {
             const [activeTab, setActiveTab] = useState('settings');
-            const [deferredPrompt, setDeferredPrompt] = useState(null);
-            const [isInstalled, setIsInstalled] = useState(false);
-            
-            // Estado para a vinculação do WhatsApp e Servidor - ATUALIZADO
-            const [backendUrl, setBackendUrl] = useState('https://trbot-backend-motor.onrender.com'); // URL do Servidor Real
+            const [backendUrl, setBackendUrl] = useState('https://trbot-backend-motor.onrender.com');
             const [phoneNumber, setPhoneNumber] = useState('');
             const [pairingCode, setPairingCode] = useState('');
             const [isGenerating, setIsGenerating] = useState(false);
             const [linkError, setLinkError] = useState('');
+            const [copied, setCopied] = useState(false);
 
-            const [businessRules, setBusinessRules] = useState("1. O horário de atendimento é das 08h às 18h.\n2. Oferecemos serviços de consultoria e produtos digitais.");
-            
-            const [chats, setChats] = useState([
-                {
-                    id: '351912345678',
-                    name: 'Cliente João',
-                    isBotActive: true,
-                    messages: [
-                        { sender: 'user', text: 'Olá, gostaria de saber como funciona o serviço de vocês.' },
-                        { sender: 'bot', text: 'Olá, João! Tudo bem? Oferecemos serviços especializados. Como posso ajudar?' }
-                    ]
-                }
-            ]);
-
-            const [activeChatId, setActiveChatId] = useState(chats[0].id);
-            const [replyText, setReplyText] = useState('');
-            const chatEndRef = useRef(null);
-
-            const activeChat = chats.find(c => c.id === activeChatId);
-
-            useEffect(() => {
-                if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-                    setIsInstalled(true);
-                }
-                const handler = (e) => {
-                    e.preventDefault();
-                    setDeferredPrompt(e);
-                };
-                window.addEventListener('beforeinstallprompt', handler);
-                return () => window.removeEventListener('beforeinstallprompt', handler);
-            }, []);
-
-            const handleInstall = async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        setDeferredPrompt(null);
-                        setIsInstalled(true);
-                    }
-                }
-            };
-
-            useEffect(() => {
-                chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-            }, [activeChat?.messages]);
-
-            const handleManualReply = () => {
-                if (!replyText.trim()) return;
-                setChats(prevChats => prevChats.map(chat => {
-                    if (chat.id === activeChatId) {
-                        return { ...chat, messages: [...chat.messages, { sender: 'human', text: replyText }] };
-                    }
-                    return chat;
-                }));
-                setReplyText('');
-            };
-
-            const toggleBotStatus = () => {
-                setChats(prevChats => prevChats.map(chat => {
-                    if (chat.id === activeChatId) {
-                        return { ...chat, isBotActive: !chat.isBotActive };
-                    }
-                    return chat;
-                }));
-            };
-
-            // Função REAL que comunica com o Backend para gerar o código
             const handleGenerateCode = async () => {
                 if (!phoneNumber || phoneNumber.length < 8) {
-                    setLinkError('Por favor, insira um número válido (ex: 351912345678 ou 5511999999999).');
-                    return;
-                }
-                
-                if (!backendUrl) {
-                    setLinkError('Por favor, defina o URL do seu servidor backend nas configurações acima.');
+                    setLinkError('Insira um número válido (ex: 5511999999999).');
                     return;
                 }
                 
                 setIsGenerating(true);
                 setLinkError('');
+                setCopied(false);
                 
                 try {
-                    // Limpa a formatação para ter a certeza que enviamos apenas números
                     const cleanPhone = phoneNumber.replace(/\D/g, '');
-                    
-                    // Faz o pedido REAL ao servidor que criámos
                     const response = await fetch(`${backendUrl}/api/pair-code`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ phone: cleanPhone })
                     });
                     
                     const data = await response.json();
-                    
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Falha ao gerar o código no servidor.');
-                    }
-                    
-                    if (data.code) {
-                        setPairingCode(data.code);
-                    } else {
-                        throw new Error('O servidor não devolveu um código válido.');
-                    }
-                    
+                    if (!response.ok) throw new Error(data.error || 'Falha ao gerar o código.');
+                    setPairingCode(data.code);
                 } catch (error) {
-                    console.error("Erro na ligação ao backend:", error);
-                    setLinkError(`Erro de ligação: Não foi possível aceder ao servidor em ${backendUrl}. Verifique se o servidor está online.`);
+                    setLinkError(error.message || `Erro de ligação ao servidor.`);
                 } finally {
                     setIsGenerating(false);
                 }
             };
 
+            const handleCopyCode = () => {
+                const codeToCopy = pairingCode.replace('-', '');
+                try {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(codeToCopy);
+                    } else {
+                        const textArea = document.createElement("textarea");
+                        textArea.value = codeToCopy;
+                        textArea.style.position = "absolute";
+                        textArea.style.left = "-999999px";
+                        document.body.prepend(textArea);
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                        } catch (error) {
+                            console.error(error);
+                        } finally {
+                            textArea.remove();
+                        }
+                    }
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 3000);
+                } catch (err) {
+                    console.error('Falha ao copiar', err);
+                }
+            };
+
             return (
                 <div className="flex h-[100dvh] w-full bg-slate-50 font-sans overflow-hidden">
-                    {/* MENU LATERAL */}
                     <div className="w-16 lg:w-64 bg-[#111b21] text-white flex flex-col transition-all duration-300 flex-shrink-0">
                         <div className="p-3 lg:p-4 flex items-center justify-center lg:justify-start border-b border-slate-700/50 h-16">
-                            <div className="bg-[#00a884] p-1.5 lg:p-2 rounded-lg">
-                                <Bot size={20} className="text-white" />
-                            </div>
+                            <div className="bg-[#00a884] p-1.5 lg:p-2 rounded-lg"><Bot size={20} className="text-white" /></div>
                             <span className="hidden lg:block ml-3 font-bold text-lg tracking-wide">TRBot IA</span>
                         </div>
-                        
                         <nav className="flex-1 py-4 flex flex-col gap-2 px-2 lg:px-4">
-                            <button onClick={() => setActiveTab('chats')} className={`w-full flex items-center justify-center lg:justify-start gap-3 p-3 rounded-xl transition-all ${activeTab === 'chats' ? 'bg-[#1e2b33] text-[#00a884] font-medium' : 'text-slate-400 hover:bg-[#1e2b33]'}`}>
-                                <MessageSquare size={20} />
-                                <span className="hidden lg:block text-sm">Chats</span>
-                            </button>
-                            <button onClick={() => setActiveTab('knowledge')} className={`w-full flex items-center justify-center lg:justify-start gap-3 p-3 rounded-xl transition-all ${activeTab === 'knowledge' ? 'bg-[#1e2b33] text-[#00a884] font-medium' : 'text-slate-400 hover:bg-[#1e2b33]'}`}>
-                                <BookOpen size={20} />
-                                <span className="hidden lg:block text-sm">Regras</span>
-                            </button>
                             <button onClick={() => setActiveTab('settings')} className={`w-full flex items-center justify-center lg:justify-start gap-3 p-3 rounded-xl transition-all ${activeTab === 'settings' ? 'bg-[#1e2b33] text-[#00a884] font-medium' : 'text-slate-400 hover:bg-[#1e2b33]'}`}>
-                                <Settings size={20} />
-                                <span className="hidden lg:block text-sm">Definições</span>
+                                <Settings size={20} /> <span className="hidden lg:block text-sm">Definições</span>
                             </button>
                         </nav>
-
-                        {deferredPrompt && !isInstalled && (
-                            <div className="px-2 lg:px-4 mb-4">
-                                <button onClick={handleInstall} className="w-full bg-[#00a884] hover:bg-[#008f6f] text-white p-2 lg:p-3 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg animate-pulse">
-                                    <Download size={18} />
-                                    <span className="hidden lg:block text-sm font-bold">Instalar App</span>
-                                </button>
-                            </div>
-                        )}
-
-                        <div className="p-3 lg:p-4 border-t border-slate-700/50 flex items-center justify-center lg:justify-start text-slate-400">
-                            <User size={18} />
-                            <span className="hidden lg:block ml-3 text-xs">Administrador</span>
-                        </div>
                     </div>
 
-                    {/* ÁREA DE CHAT E TREINAMENTO MANTIDAS IGUAIS (Ocultadas aqui para foco no código) */}
-                    {activeTab === 'chats' && (
-                        <div className="flex-1 flex flex-col md:flex-row min-w-0 p-8 items-center justify-center bg-slate-50">
-                             <div className="text-center text-slate-400">
-                                 <MessageSquare size={48} className="mx-auto mb-4 opacity-50" />
-                                 <p>Ligue o seu WhatsApp nas Definições para ver os chats aqui.</p>
-                             </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'knowledge' && (
-                        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-                            <div className="max-w-2xl mx-auto">
-                                <h1 className="text-xl md:text-2xl font-bold text-slate-800 mb-2">Base de Conhecimento</h1>
-                                <p className="text-sm text-slate-500 mb-6">Regras que o TRBot IA deve seguir.</p>
-                                <div className="bg-white rounded-xl shadow-sm border p-4 md:p-6">
-                                    <textarea 
-                                        className="w-full h-64 p-3 border rounded-lg focus:ring-2 focus:ring-[#00a884] outline-none text-sm resize-none"
-                                        value={businessRules} onChange={(e) => setBusinessRules(e.target.value)}
-                                    ></textarea>
-                                    <button className="mt-4 w-full md:w-auto float-right bg-[#00a884] text-white px-6 py-2.5 rounded-lg text-sm font-bold shadow-md">
-                                        Guardar Treino
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ABA: CONFIGURAÇÕES E VINCULAÇÃO WHATSAPP WEB */}
                     {activeTab === 'settings' && (
                         <div className="flex-1 overflow-y-auto p-4 md:p-8">
                             <div className="max-w-2xl mx-auto">
-                                <h1 className="text-xl md:text-2xl font-bold text-slate-800 mb-6">Definições e Vinculação</h1>
-                                
-                                {/* Secção 1: Configuração do Servidor Backend */}
+                                <h1 className="text-xl md:text-2xl font-bold text-slate-800 mb-6">Vinculação WhatsApp</h1>
+
+                                {/* Secção URL do Servidor */}
                                 <div className="bg-white rounded-xl shadow-sm border p-4 md:p-6 mb-4 space-y-4 border-l-4 border-l-blue-500">
                                     <h3 className="font-bold flex items-center gap-2 text-lg">
-                                        <Server size={20} className="text-blue-500" /> 
-                                        Ligação ao Servidor (Motor)
+                                        <Server size={20} className="text-blue-500" /> Ligação ao Servidor (Motor)
                                     </h3>
-                                    <p className="text-sm text-slate-500">
-                                        A sua aplicação precisa de um servidor Node.js para comunicar com os servidores do WhatsApp e gerar um código real.
-                                    </p>
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">URL do Servidor</label>
                                         <input 
@@ -312,63 +151,71 @@
                                     </div>
                                 </div>
 
-                                {/* Secção 2: Vinculação por Código */}
                                 <div className="bg-white rounded-xl shadow-sm border p-4 md:p-6 mb-4 space-y-4">
                                     <h3 className="font-bold flex items-center gap-2 text-lg">
-                                        <Smartphone size={20} className="text-[#00a884]" /> 
-                                        Vincular WhatsApp
+                                        <Smartphone size={20} className="text-[#00a884]" /> Conectar no mesmo aparelho
                                     </h3>
-                                    <p className="text-sm text-slate-500 pb-2">
-                                        Gere um código real para inserir no seu telemóvel e ligar a IA.
-                                    </p>
-
+                                    
                                     {!pairingCode ? (
                                         <div className="space-y-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">
-                                                    Número do WhatsApp (apenas números, com código do país)
-                                                </label>
-                                                <div className="flex flex-col sm:flex-row gap-3">
-                                                    <input 
-                                                        type="tel" 
-                                                        placeholder="Ex: 5511999999999" 
-                                                        value={phoneNumber}
-                                                        onChange={(e) => {
-                                                            setPhoneNumber(e.target.value.replace(/[^\d+]/g, ''));
-                                                            setLinkError('');
-                                                        }}
-                                                        className="flex-1 p-3 border border-slate-300 rounded-lg text-sm outline-none focus:border-[#00a884] transition-colors" 
-                                                    />
-                                                    <button 
-                                                        onClick={handleGenerateCode}
-                                                        disabled={isGenerating || !phoneNumber || !backendUrl}
-                                                        className="bg-[#00a884] text-white px-6 py-3 rounded-lg text-sm font-bold shadow-md hover:bg-[#008f6f] disabled:opacity-50 transition-colors whitespace-nowrap flex items-center justify-center min-w-[140px]"
-                                                    >
-                                                        {isGenerating ? (
-                                                            <span className="flex items-center gap-2">
-                                                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                                                                A ligar...
-                                                            </span>
-                                                        ) : 'Gerar Código Real'}
-                                                    </button>
-                                                </div>
-                                                {linkError && <div className="p-3 mt-3 bg-red-50 text-red-700 rounded-lg border border-red-200 text-sm">{linkError}</div>}
+                                            <p className="text-sm text-slate-500">
+                                                Insira o número exato do seu WhatsApp (ex: 5511999999999). 
+                                            </p>
+                                            <div className="flex flex-col gap-3">
+                                                <input 
+                                                    type="tel" 
+                                                    placeholder="55 + DDD + Número" 
+                                                    value={phoneNumber}
+                                                    onChange={(e) => { setPhoneNumber(e.target.value.replace(/[^\d+]/g, '')); setLinkError(''); }}
+                                                    className="w-full p-4 border-2 border-slate-200 rounded-xl text-lg font-medium outline-none focus:border-[#00a884] transition-colors" 
+                                                />
+                                                <button 
+                                                    onClick={handleGenerateCode}
+                                                    disabled={isGenerating || !phoneNumber}
+                                                    className="bg-[#00a884] text-white px-6 py-4 rounded-xl text-base font-bold shadow-md hover:bg-[#008f6f] disabled:opacity-50 transition-colors w-full flex items-center justify-center"
+                                                >
+                                                    {isGenerating ? 'A gerar código...' : 'Gerar Código de Acesso'}
+                                                </button>
                                             </div>
+                                            {linkError && <div className="p-3 bg-red-50 text-red-700 rounded-lg border border-red-200 text-sm">{linkError}</div>}
                                         </div>
                                     ) : (
-                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-center shadow-inner animate-in fade-in zoom-in duration-300">
-                                            <p className="text-sm text-slate-600 font-medium mb-3">Insira este código gerado no seu telemóvel:</p>
-                                            <div className="text-3xl sm:text-4xl font-mono font-bold tracking-[0.2em] text-slate-800 bg-white border-2 border-slate-200 py-4 px-2 rounded-lg mx-auto max-w-xs shadow-sm">
+                                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-center shadow-inner animate-in fade-in">
+                                            <p className="text-sm text-slate-600 font-medium mb-3">O seu código de acesso:</p>
+                                            
+                                            <div className="text-4xl font-mono font-bold tracking-[0.2em] text-slate-800 bg-white border-2 border-slate-200 py-4 px-2 rounded-lg mx-auto max-w-xs shadow-sm mb-4">
                                                 {pairingCode}
                                             </div>
-                                            <div className="text-xs text-slate-600 text-left space-y-2 mt-6 max-w-sm mx-auto bg-white p-4 rounded-lg border border-slate-200">
-                                                <p className="font-semibold text-slate-800 mb-2">Instruções no WhatsApp:</p>
-                                                <p className="flex items-start gap-2"><span className="bg-[#d9fdd3] text-[#128c7e] rounded-full w-4 h-4 flex items-center justify-center shrink-0 mt-0.5">1</span> Aparelhos Associados > Associar com o número de telefone.</p>
-                                            </div>
+                                            
                                             <button 
-                                                onClick={() => { setPairingCode(''); setPhoneNumber(''); }}
-                                                className="text-slate-500 text-sm font-medium mt-4 hover:text-[#00a884] transition-colors"
+                                                onClick={handleCopyCode}
+                                                className={`w-full mb-6 py-4 px-6 rounded-xl text-base font-bold shadow-md transition-all flex items-center justify-center gap-2 ${copied ? 'bg-[#d9fdd3] text-[#128c7e] border border-[#25D366]' : 'bg-[#111b21] text-white hover:bg-slate-800'}`}
                                             >
+                                                {copied ? <Check size={20} /> : <Copy size={20} />}
+                                                {copied ? 'Código Copiado!' : 'Copiar Código'}
+                                            </button>
+
+                                            <div className="text-sm text-slate-700 text-left space-y-3 bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+                                                <p className="font-bold text-[#00a884] mb-2 uppercase text-xs tracking-wider">Como colar no WhatsApp:</p>
+                                                <p className="flex items-start gap-3">
+                                                    <span className="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center shrink-0 font-bold text-xs">1</span> 
+                                                    Abra o seu WhatsApp e vá a <strong>Configurações (ou 3 pontinhos)</strong>.
+                                                </p>
+                                                <p className="flex items-start gap-3">
+                                                    <span className="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center shrink-0 font-bold text-xs">2</span> 
+                                                    Toque em <strong>Aparelhos Associados</strong>.
+                                                </p>
+                                                <p className="flex items-start gap-3">
+                                                    <span className="bg-slate-200 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center shrink-0 font-bold text-xs">3</span> 
+                                                    Toque em <strong>Conectar um aparelho</strong>.
+                                                </p>
+                                                <p className="flex items-start gap-3 bg-yellow-50 p-2 rounded-lg border border-yellow-100">
+                                                    <span className="bg-[#00a884] text-white rounded-full w-6 h-6 flex items-center justify-center shrink-0 font-bold text-xs">4</span> 
+                                                    No ecrã da câmara, toque em <strong>"Conectar com número de telefone"</strong> (no fundo) e cole o código!
+                                                </p>
+                                            </div>
+                                            
+                                            <button onClick={() => { setPairingCode(''); setPhoneNumber(''); }} className="text-slate-500 text-sm font-medium mt-6 hover:text-[#00a884] underline">
                                                 Gerar novo código
                                             </button>
                                         </div>
@@ -377,7 +224,6 @@
                             </div>
                         </div>
                     )}
-
                 </div>
             );
         }
